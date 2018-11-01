@@ -35,9 +35,11 @@ adl = core.AzureDLFileSystem(adlCreds, store_name=store_name)
 def post(path):
     if adl.exists(path):
         with adl.open(path, 'a+b') as f:
+            logger.info("Appending to '%s'", path)
             writer(f, parsed_avro_schema, request.json)
     else:
         with adl.open(path, 'wb') as f:
+            logger.info("Writing '%s'", path)
             writer(f, parsed_avro_schema, request.json)
         adl.chmod(path, default_perms)
     return Response("Thanks!", mimetype="text/plain")
@@ -47,6 +49,7 @@ def post(path):
 def get(path):
     def generate():
         with adl.open(path, 'rb') as f:
+            logger.info("Reading '%s'", path)
             yield "["
             index=0
             for record in reader(f):
