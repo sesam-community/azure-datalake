@@ -1,6 +1,6 @@
 # Avro files in Azure Datalake
 
-Example config:
+Example system config:
 ```
 {
   "_id": "my-datalake",
@@ -34,6 +34,20 @@ Example config:
     },
     "image": "sesamcommunity/azure-datalake",
     "port": 5000
+  }
+}
+```
+
+Example sink pipe:
+```
+{
+  "transform": {
+    "type": "dtl"
+    [ make sure the outgoing entities match the AVRO_SCHEMA specified, otherwise it will fail ]
+  }
+  "sink": {
+    "type": "json",
+    "system": "my-datalake"
   }
 }
 ```
