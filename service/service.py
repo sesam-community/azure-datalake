@@ -31,7 +31,7 @@ adlCreds = lib.auth(tenant_id = tenant,
 adl = core.AzureDLFileSystem(adlCreds, store_name=store_name)
 
 
-@app.route('/<path>', methods=["POST"])
+@app.route('/<path:path>', methods=["POST"])
 def post(path):
     if adl.exists(path):
         with adl.open(path, 'a+b') as f:
@@ -43,16 +43,20 @@ def post(path):
     return Response("Thanks!", mimetype="text/plain")
 
 
-@app.route('/<path>', methods=["GET"])
+@app.route('/<path:path>', methods=["GET"])
 def get(path):
     def generate():
-        yield "["
         with adl.open(path, 'rb') as f:
-            for index, record in enumerate(reader(f)):
+            yield "["
+            index=0
+            for record in reader(f):
                 if index > 0:
                     yield ","
                 yield json.dumps(record)
-        yield "]"
+                index = index + 1
+            yield "]"
+    if not adl.exists(path):
+        return Response("Path %s does not exist\n" % path, status=404)
     return Response(generate(), mimetype='application/json', )
 
 if __name__ == '__main__':
