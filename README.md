@@ -47,10 +47,13 @@ Example sink pipe:
   }
   "sink": {
     "type": "json",
-    "system": "my-datalake"
+    "system": "my-datalake",
+    "url": "foo/bar.avro"
   }
 }
 ```
+
+Make sure you create the directory that you will be writing into, otherwise the library will automatically create the directory tree for you with default permissions.
 
 ## Limitations
 
