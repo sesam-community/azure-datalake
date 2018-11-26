@@ -34,11 +34,15 @@ adl = core.AzureDLFileSystem(adlCreds, store_name=store_name)
 
 @app.route('/<path:base>', methods=["POST"])
 def post(base):
-    path = os.path.join(base, '{0:%Y/%m/%d/%H/%M/%S.avro}'.format(datetime.datetime.now()))
+    timestamp = datetime.datetime.now()
+    path = os.path.join(base, '{0:%Y/%m/%d/%H/%M/}'.format(timestamp))
     # like mkdir -p
     adl.mkdir(path)
-    with adl.open(path, 'wb') as f:
-        logger.info("Writing '%s'", path)
+    file = os.path.join(path, '{0:%S.avro}'.format(timestamp))
+    if adl.exists(file):
+        return Response("File %s already exists\n" % file, status=409)
+    with adl.open(file, 'wb') as f:
+        logger.info("Writing '%s'", file)
         writer(f, parsed_avro_schema, request.json)
     return Response("Thanks!", mimetype="text/plain")
 
