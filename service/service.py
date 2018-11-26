@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from flask import Flask, Response, request
@@ -31,17 +32,14 @@ adlCreds = lib.auth(tenant_id = tenant,
 adl = core.AzureDLFileSystem(adlCreds, store_name=store_name)
 
 
-@app.route('/<path:path>', methods=["POST"])
-def post(path):
-    if adl.exists(path):
-        with adl.open(path, 'a+b') as f:
-            logger.info("Appending to '%s'", path)
-            writer(f, parsed_avro_schema, request.json)
-    else:
-        with adl.open(path, 'wb') as f:
-            logger.info("Writing '%s'", path)
-            writer(f, parsed_avro_schema, request.json)
-        adl.chmod(path, default_perms)
+@app.route('/<path:base>', methods=["POST"])
+def post(base):
+    path = os.path.join(base, '{0:%Y/%m/%d/%H/%M/%S.avro}'.format(datetime.datetime.now()))
+    # like mkdir -p
+    adl.mkdir(path)
+    with adl.open(path, 'wb') as f:
+        logger.info("Writing '%s'", path)
+        writer(f, parsed_avro_schema, request.json)
     return Response("Thanks!", mimetype="text/plain")
 
 
